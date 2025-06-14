@@ -13,6 +13,8 @@ VerifyEmailToken.getLayout = function getLayout(page: ReactElement) {
 export const getServerSideProps = async ({
   query,
 }: GetServerSidePropsContext) => {
+try {
+
   const { token } = query as { token: string };
 
   if (!token) {
@@ -67,7 +69,14 @@ export const getServerSideProps = async ({
       destination: '/auth/login?success=email-verified',
       permanent: false,
     },
-  };
+  
+    } catch (error) {
+    console.error('verify-email-token error', error);
+    return {
+      notFound: true,
+    };
+  }
+};
 };
 
 export default VerifyEmailToken;
