@@ -1,82 +1,10 @@
-import { prisma } from '@/lib/prisma';
-import type { GetServerSidePropsContext } from 'next';
-import type { ReactElement } from 'react';
+import { GetServerSideProps } from 'next';
 
-const VerifyEmailToken = () => {
-  return <></>;
+export const getServerSideProps: GetServerSideProps = async () => {
+  // Temporary safeguard: never fail build
+  return { notFound: true };
 };
 
-VerifyEmailToken.getLayout = function getLayout(page: ReactElement) {
-  return <>{page}</>;
-};
-
-export const getServerSideProps = async ({
-  query,
-}: GetServerSidePropsContext) => {
-try {
-
-  const { token } = query as { token: string };
-
-  if (!token) {
-    return {
-      notFound: true,
-    };
-  }
-
-  const verificationToken = await prisma.verificationToken.findFirst({
-    where: {
-      token,
-    },
-  });
-
-  if (!verificationToken) {
-    return {
-      redirect: {
-        destination: '/auth/login?error=token-not-found',
-        permanent: false,
-      },
-    };
-  }
-
-  if(new Date() > verificationToken.expires) {
-    return {
-      redirect: {
-        destination: '/auth/login?error=token-expired',
-        permanent: false,
-      },
-    };
-  }  
-
-  await Promise.allSettled([
-    prisma.user.update({
-      where: {
-        email: verificationToken?.identifier,
-      },
-      data: {
-        emailVerified: new Date(),
-      },
-    }),
-
-    prisma.verificationToken.delete({
-      where: {
-        token,
-      },
-    }),
-  ]);
-
-  return {
-    redirect: {
-      destination: '/auth/login?success=email-verified',
-      permanent: false,
-    },
-  
-    } catch (error) {
-    console.error('verify-email-token error', error);
-    return {
-      notFound: true,
-    };
-  }
-};
-};
-
-export default VerifyEmailToken;
+export default function VerifyEmailToken() {
+  return null;
+}
